@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+
+
+
+model Produto {
+  id             String      @id @default(uuid())
+  codigo         String      @unique
+  nome           String
+  tipo_venda     String
+  preco_custo    Decimal
+  preco_venda    Decimal
+  criado_em      DateTime    @default(now())
+  atualizado_em  DateTime    @updatedAt
+  itens_venda    ItemVenda[]
+
+  @@map("produtos")
+}
+
+model Venda {
+  id               String      @id @default(uuid())
+  data_hora        DateTime    @default(now())
+  subtotal         Decimal
+  desconto         Decimal
+  total            Decimal
+  status_pagamento String      @default("PAGO")
+  cliente_nome     String?
+  itens            ItemVenda[]
+  pagamentos       Pagamento[]
+
+  @@map("vendas")
+}
+
+model ItemVenda {
+  id                   String  @id @default(uuid())
+  venda_id             String
+  produto_id           String
+  quantidade           Decimal
+  preco_venda_unitario Decimal
+  preco_custo_unitario Decimal
+  subtotal             Decimal
+
+  venda   Venda   @relation(fields: [venda_id], references: [id], onDelete: Cascade)
+  produto Produto @relation(fields: [produto_id], references: [id], onDelete: Restrict)
+
+  @@map("itens_venda")
+}
+
+
+
+
+model Pagamento {
+  id       String          @id @default(uuid())
+  venda_id String
+  metodo   String
+  valor    Decimal
+
+  venda Venda @relation(fields: [venda_id], references: [id], onDelete: Cascade)
+
+  @@map("pagamentos")
+}
+
+
+model Fechamento {
+  id              String   @id @default(uuid())
+  data_fechamento DateTime @default(now())
+  total_vendas    Decimal
+  total_despesas  Decimal
+  saldo_final     Decimal
+
+  @@map("fechamentos")
+}
