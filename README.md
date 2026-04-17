@@ -1,73 +1,99 @@
-# React + TypeScript + Vite
+﻿# 🍏 Hortifruti JH - Gestão e PDV
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![React](https://img.shields.io/badge/React-19.2-blue?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)
+![Node.js](https://img.shields.io/badge/Node.js-Express-green?logo=nodedotjs)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-gray?logo=prisma)
+![Electron](https://img.shields.io/badge/Electron-Desktop-47848F?logo=electron)
+![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-Currently, two official plugins are available:
+Sistema completo de Ponto de Venda (PDV) e gestão de retaguarda focado em sacolões, hortifrútis e pequenos comércios. Desenvolvido para rodar como aplicação Desktop (Electron) ou Web, com um backend robusto e interface otimizada para operação rápida via teclado.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Funcionalidades
 
-## React Compiler
+- **🛒 Frente de Caixa (PDV):** Vendas rápidas com suporte a código de barras e atalhos de teclado (F1 a F12).
+- **📦 Gestão de Produtos:** Controle de estoque, custo, preço de venda e margem de lucro por unidade ou KG.
+- **📜 Histórico de Vendas:** Estornos, cupons e detalhamento passo a passo.
+- **📖 Controle de Fiados:** Gerenciamento fiado/caderneta com rotina de quitação e baixa.
+- **📊 Dashboard & Métricas:** Resumo estatístico de faturamento, ticket médio, lucro e produtos mais vendidos.
+- **💰 Balanço de Caixa:** Fechamento de caixa diário (entradas vs despesas).
+- **🖨️ Integração com Impressoras Térmicas:** Impressão de cupom não fiscal através do "escpos".
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tecnologias Utilizadas
 
-## Expanding the ESLint configuration
+**Frontend / Desktop:**
+- React 19 + TypeScript
+- Vite
+- Tailwind CSS 4
+- Zustand (Gerenciamento de Estado)
+- React Router DOM
+- Electron (Empacotamento Desktop)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Backend:**
+- Node.js + Express
+- Prisma ORM 
+- Integração com banco de dados relacional (via Prisma)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**Testes & Qualidade:**
+- Jest & Vitest (Testes unificados de Integração e Frontend - 100% de cobertura no backend)
+- Testing Library (Testes de Componentes)
+- ESLint + TypeScript estrito
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🚀 Como Executar o Projeto
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Pré-requisitos
+- Node.js (v18+)
+- NPM, Yarn ou pnpm
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Instalação
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Clone o repositório:
+`ash
+git clone https://github.com/SEU_USUARIO/hortifruti.git
+cd hortifruti
+`
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+2. Instale as dependências:
+`ash
+npm install
+`
+
+3. Inicialize o banco de dados (Prisma):
+`ash
+npx prisma db push
+`
+
+4. Execute a aplicação simultaneamente (Inicia servidor Vite, backend Node e Janela do Electron):
+`ash
+npm run dev
+`
+
+## 🧪 Rodando os Testes
+
+O projeto é focado em qualidade de código, com testes cobrindo regras de negócio essenciais e as interfaces gráficas. Foi alcançado **100% de Code Coverage** no backend através de uma suíte unificada.
+
+Para executar todos os testes automatizados (Backend + Frontend):
+`ash
+npm run test
+`
+
+Para extrair relatórios de cobertura:
+`ash
+npm run test:coverage
+`
+
+## ⌨️ Atalhos de Teclado do PDV
+O sistema foi desenvolvido pensando na fluidez do caixa, limitando o uso de mouse.
+- F1 - Caixa (Frente de Loja)
+- F2 - Estoque / Cadastrar Produtos
+- F3 - Histórico de Vendas Realizadas
+- F4 - Controle de Fiados
+- F5 - Dashboard e Resumo
+- F6 - Balanço de Entradas/Saídas
+- F10 - Cancelar e Zerar Venda Atual no PDV
+- F12 - Pagar/Finalizar Venda no PDV
+
+## 📄 Licença
+
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
