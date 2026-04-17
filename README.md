@@ -1,4 +1,4 @@
-﻿# 🍏 Hortifruti JH - Gestão e PDV
+# 🍏 Hortifruti JH - Gestão e PDV
 
 ![React](https://img.shields.io/badge/React-19.2-blue?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)
@@ -18,7 +18,7 @@ Sistema completo de Ponto de Venda (PDV) e gestão de retaguarda focado em sacol
 - **📖 Controle de Fiados:** Gerenciamento fiado/caderneta com rotina de quitação e baixa.
 - **📊 Dashboard & Métricas:** Resumo estatístico de faturamento, ticket médio, lucro e produtos mais vendidos.
 - **💰 Balanço de Caixa:** Fechamento de caixa diário (entradas vs despesas).
-- **🖨️ Integração com Impressoras Térmicas:** Impressão de cupom não fiscal através do "escpos".
+- **🖨️ Integração com Impressoras Térmicas:** Impressão de cupom não fiscal através do escpos.
 
 ## 🛠️ Tecnologias Utilizadas
 
