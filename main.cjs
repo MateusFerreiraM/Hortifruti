@@ -25,10 +25,69 @@ function createWindow() {
   }
 }
 
-let backendProcess;
+// ==========================================
+// PREPARANDO O BANCO DE DADOS (SQLITE) E BACKEND NO ELECTRON
+// ==========================================
+const fs = require('fs');
+const isDev = !app.isPackaged;
+
+// Vamos criar um log de debug para saber exatamente o erro do Backend 
+const logPath = path.join(app.getPath('userData'), 'backend-error.log');
+function logError(msg) {
+  fs.appendFileSync(logPath, msg + '\n');
+}
+logError("--- INICIANDO APLICATIVO ---");
+
+if (!isDev) {
+  const userDataPath = app.getPath('userData');
+  if (!fs.existsSync(userDataPath)) {
+    fs.mkdirSync(userDataPath, { recursive: true });
+  }
+
+  const dbConfigPath = path.join(userDataPath, 'dev.db');
+  console.log("Caminho do Banco SQLITE Producao:", dbConfigPath);
+  logError("Caminho do Banco: " + dbConfigPath);
+  
+  if (!fs.existsSync(dbConfigPath)) {
+    // Como informamos asarUnpack no package.json, a pasta prisma fica em app.asar.unpacked e nao em app.asar
+    const unpackedDir = __dirname.replace('app.asar', 'app.asar.unpacked');
+    const sourceDb = path.join(unpackedDir, 'prisma', 'dev.db');
+    logError("Caminho Source: " + sourceDb);
+    
+    if (fs.existsSync(sourceDb)) {
+      try {
+        fs.copyFileSync(sourceDb, dbConfigPath);
+        logError("Copiado com sucesso do SourceDb.");
+      } catch(e) {
+        logError("Erro ao copiar arquivo: " + e.message);
+      }
+      
+    } else {
+      console.error("NÃO ACHOU O BANCO DE ORIGEM EM:", sourceDb);
+      logError("ERRO FATAL: NÃO ACHOU SOURCE DB EM: " + sourceDb);
+    }
+  } else {
+    logError("Arquivo dev.db ja existe no destino.");
+  }
+  
+  // Injeta o arquivo do appData na conexáo do Prisma do Backend. Note que precisa do formato file:///
+  // Replace de contra-barras (Windows) para barras normais para o Prisma Client ler corretamente.
+  process.env.DATABASE_URL = `file:${dbConfigPath.replace(/\\/g, '/')}`;
+}
+
+// Inicia o backend diretamente dentro do mesmo processo do main do Electron
+try {
+  const serverApp = require('./server/index.cjs');
+  serverApp.listen(3001, () => {
+    console.log('Servidor Backend On-line Embutido no Node do Electron (Porta 3001)');
+    logError("Express: Servidor Backend Iniciou Corretamente!");
+  });
+} catch(e) {
+  console.log("Erro ao iniciar server embutido:", e);
+  logError("Express (Backend) quebrou ao iniciar: " + (e.stack || e.message));
+}
 
 app.whenReady().then(() => {
-  backendProcess = spawn('node', [path.join(__dirname, 'server', 'index.cjs')], { stdio: 'inherit' });
   createWindow();
 
   app.on('activate', () => {
@@ -40,7 +99,6 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    if(backendProcess) backendProcess.kill();
     app.quit();
   }
 });

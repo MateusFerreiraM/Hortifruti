@@ -17,7 +17,8 @@
     "test:coverage": "npx jest --coverage --collectCoverageFrom=server/index.cjs",
     "test:frontend": "vitest run",
     "pack": "electron-builder --dir",
-    "dist": "npm run build && electron-builder --windows"
+    "dist": "npm run build && electron-builder --windows",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
@@ -90,6 +91,10 @@
       "main.cjs",
       "prisma/**/*",
       "package.json"
+    ],
+    "asarUnpack": [
+      "prisma/**/*",
+      "**/*.node"
     ]
   }
 }

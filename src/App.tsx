@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import PDV from './pages/PDV';
 import Dashboard from './pages/Dashboard';
@@ -79,7 +79,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Layout>
         <Routes>
           <Route path="/" element={<PDV />} />
@@ -90,7 +90,7 @@ function App() {
           <Route path="/balanco" element={<Balanco />} />
         </Routes>
       </Layout>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

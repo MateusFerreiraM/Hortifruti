@@ -1,9 +1,14 @@
 ﻿const express = require('express');
 const cors = require('cors');
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require('../prisma/client');
 
 const app = express();
-const prisma = new PrismaClient();
+
+const prismaConfig = process.env.DATABASE_URL
+  ? { datasources: { db: { url: process.env.DATABASE_URL } } }
+  : {};
+
+const prisma = new PrismaClient(prismaConfig);
 const PORT = 3001;
 
 app.use(cors());
