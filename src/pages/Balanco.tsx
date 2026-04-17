@@ -76,11 +76,11 @@ export default function Balanco() {
     }
   };
 
-  if (loading) return <div className="p-8 text-xl">Carregando BalanÃ§os...</div>;
+  if (loading) return <div className="p-8 text-xl">Carregando Balanços...</div>;
 
   return (
     <div className="p-8 h-full overflow-y-auto bg-slate-50 text-slate-800 flex flex-col">
-      <h1 className="text-3xl font-bold text-slate-800 mb-8">BalanÃ§o por Dia (Fechamentos de Caixa)</h1>
+      <h1 className="text-3xl font-bold text-slate-800 mb-8">Balanço por Dia (Fechamentos de Caixa)</h1>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <table className="w-full text-left border-collapse">
@@ -90,7 +90,7 @@ export default function Balanco() {
               <th className="p-4 font-bold border-b text-right">Total Vendido (+)</th>
               <th className="p-4 font-bold border-b text-right">Despesas (-)</th>
               <th className="p-4 font-bold border-b text-right">Saldo Final do Dia</th>
-              <th className="p-4 font-bold border-b text-center">AÃ§Ãµes</th>
+              <th className="p-4 font-bold border-b text-center">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -128,7 +128,7 @@ export default function Balanco() {
           <div className="bg-white p-10 rounded-3xl w-[450px] shadow-2xl text-slate-800 relative text-center">
             <span className="text-6xl mb-4 block">âš ï¸</span>
             <h2 className="text-2xl font-black mb-2 text-slate-800">Excluir Fechamento?</h2>
-            <p className="text-slate-600 mb-8">Tem certeza de que deseja excluir este fechamento do histÃ³rico? Esta aÃ§Ã£o nÃ£o pode ser desfeita.</p>
+            <p className="text-slate-600 mb-8">Tem certeza de que deseja excluir este fechamento do histórico? Esta ação não pode ser desfeita.</p>
             <div className="flex gap-4">
               <button
                 onClick={() => setModalExcluirOpen(false)}
@@ -151,7 +151,7 @@ export default function Balanco() {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100]">
           <div className="bg-white p-10 rounded-3xl w-[450px] shadow-2xl text-slate-800 text-center flex flex-col items-center">
             <span className="text-6xl mb-4 block">âš ï¸</span>
-            <h2 className="text-2xl font-black mb-2">AtenÃ§Ã£o</h2>
+            <h2 className="text-2xl font-black mb-2">Atenção</h2>
             <p className="text-slate-600 mb-8 font-medium">{msgAlerta}</p>
             <button
               onClick={() => setMsgAlerta(null)}

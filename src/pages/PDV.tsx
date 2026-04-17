@@ -62,7 +62,7 @@ export default function PDV() {
         
         if (res.length > 0) {
           const prod = res[0];
-          // Se a busca foi por código de barras longo (EAN, ex: > 5 dÃ­gitos), adiciona direto = 1
+          // Se a busca foi por código de barras longo (EAN, ex: > 5 dígitos), adiciona direto = 1
           if (prod.tipo_venda === 'UNIDADE' && busca.length > 5 && busca === prod.codigo) {
             adicionarItem(prod, 1);
             setBusca('');
@@ -79,7 +79,7 @@ export default function PDV() {
           // setBusca(''); // Opcional: deixar a busca preenchida para ele corrigir
         }
       } catch(err) {
-        console.error("Backend local não acessÃ­vel", err);
+        console.error("Backend local não acessível", err);
       }
     }
   };
@@ -184,7 +184,7 @@ export default function PDV() {
     const subtotal = totalDaCompra();
     const isFiado = pagamentos.some(p => p.metodo === 'FIADO');
     // Filtramos o array de pagamentos que vai pro banco pra tirar o método 'FIADO' ou colocar lá como zero caso queiramos.
-    // O mais certo: Se é fiado, nenhum pagamento (dinheiro fÃ­sico) entra agora.
+    // O mais certo: Se é fiado, nenhum pagamento (dinheiro físico) entra agora.
     const pagamentosReais = isFiado ? [] : pagamentos;
 
     const payload = {

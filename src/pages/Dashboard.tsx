@@ -35,7 +35,7 @@ export default function Dashboard() {
         start = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
         end = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
       } else if (periodo === 'CUSTOM') {
-        // Corrigindo para criar a data isolando o fuso horÃ¡rio
+        // Corrigindo para criar a data isolando o fuso horário
         const [anoInicio, mesInicio, diaInicio] = dataInicio.split('-');
         const [anoFim, mesFim, diaFim] = dataFim.split('-');
         
@@ -64,12 +64,12 @@ export default function Dashboard() {
     carregarData();
   }, [periodo, dataInicio, dataFim]);
 
-  if (!data) return <div className="p-8 text-xl">Carregando mÃ©tricas...</div>;
+  if (!data) return <div className="p-8 text-xl">Carregando métricas...</div>;
 
   return (
     <div className="p-8 h-full overflow-y-auto bg-slate-50 text-slate-800 flex flex-col">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-800">Dashboard (MÃ©tricas)</h1>
+        <h1 className="text-3xl font-bold text-slate-800">Dashboard (Métricas)</h1>
         
         <div className="flex gap-4 items-center bg-white p-2 rounded-xl shadow-sm border border-slate-100">
            <select 
@@ -79,9 +79,9 @@ export default function Dashboard() {
            >
              <option value="HOJE">Hoje</option>
              <option value="SEMANA">Esta Semana</option>
-             <option value="MES">Este MÃªs</option>
+             <option value="MES">Este Mês</option>
              <option value="CUSTOM">Data Personalizada</option>
-             <option value="SEMPRE">Sempre (Desde o inÃ­cio)</option>
+             <option value="SEMPRE">Sempre (Desde o início)</option>
            </select>
 
            {periodo === 'CUSTOM' && (
@@ -92,7 +92,7 @@ export default function Dashboard() {
                  value={dataInicio}
                  onChange={e => setDataInicio(e.target.value)}
                />
-               <span className="text-slate-400 font-bold">AtÃ©</span>
+               <span className="text-slate-400 font-bold">Até</span>
                <input 
                  type="date" 
                  className="p-2 border-2 border-slate-200 rounded-lg text-sm font-bold focus:outline-none focus:border-emerald-500" 
@@ -114,7 +114,7 @@ export default function Dashboard() {
           <span className="block text-3xl font-bold text-indigo-600 mt-2">{data.cuponsEmitidos}</span>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
-          <span className="text-sm font-semibold text-slate-500 uppercase">Ticket MÃ©dio</span>
+          <span className="text-sm font-semibold text-slate-500 uppercase">Ticket Médio</span>
           <span className="block text-3xl font-bold text-indigo-600 mt-2">R$ {Number(data.ticketMedio).toFixed(2)}</span>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
@@ -145,7 +145,7 @@ export default function Dashboard() {
             ))}
             {data.topMaisVendidos.length === 0 && (
               <tr>
-                <td colSpan={3} className="py-4 text-center text-slate-500">Nenhum produto vendido no perÃ­odo selecioando.</td>
+                <td colSpan={3} className="py-4 text-center text-slate-500">Nenhum produto vendido no período selecioando.</td>
               </tr>
             )}
           </tbody>

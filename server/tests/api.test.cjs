@@ -8,7 +8,7 @@ describe('Backend / API Routing e Estabilidade', () => {
     expect(Array.isArray(res.body)).toBeTruthy();
   });
 
-  it('GET /api/dashboard sem data nÃ£o deve quebrar', async () => {
+  it('GET /api/dashboard sem data não deve quebrar', async () => {
     const res = await request(app).get('/api/dashboard');
     expect(res.statusCode).toEqual(200);
   });

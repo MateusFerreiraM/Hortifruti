@@ -9,7 +9,7 @@ const PORT = 3001;
 app.use(cors());
 app.use(express.json());
 
-// 1. RelatÃ³rio Dashboard
+// 1. Relatório Dashboard
 app.get('/api/dashboard', async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -92,7 +92,7 @@ app.post('/api/produtos', async (req, res) => {
     res.json(prod);
   } catch (err) {
     if (err.code === 'P2002' || (err.message && err.message.includes('Unique constraint'))) {
-      return res.status(400).json({ error: 'JÃ¡ existe um produto com este cÃ³digo!' });
+      return res.status(400).json({ error: 'Já existe um produto com este código!' });
     }
     res.status(400).json({ error: err.message });
   }
@@ -106,7 +106,7 @@ app.put('/api/produtos/:id', async (req, res) => {
     res.json(prod);
   } catch (err) {
     if (err.code === 'P2002' || (err.message && err.message.includes('Unique constraint'))) {
-      return res.status(400).json({ error: 'JÃ¡ existe um produto com este cÃ³digo!' });
+      return res.status(400).json({ error: 'Já existe um produto com este código!' });
     }
     res.status(400).json({ error: err.message });
   }
@@ -172,7 +172,7 @@ app.post('/api/vendas', async (req, res) => {
         }
       });
 
-      // Retorna a venda com dados completos para impressÃ£o
+      // Retorna a venda com dados completos para impressão
       return tx.venda.findUnique({
         where: { id: venda.id },
         include: { itens: { include: { produto: true } }, pagamentos: true }
@@ -185,7 +185,7 @@ app.post('/api/vendas', async (req, res) => {
   }
 });
 
-// 4. HistÃ³rico de Vendas e Fechamento de Caixa
+// 4. Histórico de Vendas e Fechamento de Caixa
 app.get('/api/vendas', async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -228,7 +228,7 @@ app.put('/api/vendas/:id/pagar', async (req, res) => {
   const { metodo_pagamento, valor } = req.body;
   try {
     await prisma.$transaction(async (tx) => {
-      // Cria o pagamento em Dinheiro/Pix/CartÃ£o pra contabilizar no Caixa
+      // Cria o pagamento em Dinheiro/Pix/Cartão pra contabilizar no Caixa
       await tx.pagamento.create({
         data: { venda_id: id, metodo: metodo_pagamento, valor: parseFloat(valor) }
       });
@@ -248,7 +248,7 @@ app.delete('/api/vendas/:id', async (req, res) => {
   const { id } = req.params;
   try {
     await prisma.$transaction(async (tx) => {
-      // Apaga a venda (Cascade apagarÃ¡ pagamentos e itensVenda configurados no schema)
+      // Apaga a venda (Cascade apagará pagamentos e itensVenda configurados no schema)
       await tx.venda.delete({ where: { id } });
     });
     res.json({ success: true, message: "Venda estornada com sucesso" });

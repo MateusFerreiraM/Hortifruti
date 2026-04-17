@@ -34,7 +34,7 @@ describe('Cobertura Total - Backend API', () => {
         preco_venda: 10
       });
       expect(res.status).toBe(400);
-      expect(res.body.error).toMatch(/JÃ¡ existe|existe um produto/i);
+      expect(res.body.error).toMatch(/Já existe|existe um produto/i);
     });
 
     it('PUT /api/produtos/:id deve atualizar o produto', async () => {
@@ -55,12 +55,12 @@ describe('Cobertura Total - Backend API', () => {
       });
     });
 
-    it('PUT /api/produtos/:id com cÃ³digo de outro deve retornar erro', async () => {
+    it('PUT /api/produtos/:id com código de outro deve retornar erro', async () => {
       const res = await request(app).put(`/api/produtos/${produtoId}`).send({
         codigo: p2Code
       });
       expect(res.status).toBe(400);
-      expect(res.body.error).toMatch(/JÃ¡ existe|existe um produto/i);
+      expect(res.body.error).toMatch(/Já existe|existe um produto/i);
     });
 
     it('GET /api/produtos/buscar?q=.. (Exato)', async () => {

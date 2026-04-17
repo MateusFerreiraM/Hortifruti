@@ -126,7 +126,7 @@ export default function Caixa() {
       setDespesaValor('');
       setDespesaDescricao('');
       carregarVendas();
-    } catch { // catch ignorando erro
+    } catch (e) { // catch ignorando erro
       console.error(e);
       setMsgAlerta('Erro ao registrar despesa.');
     }
@@ -200,7 +200,7 @@ export default function Caixa() {
     try {
       const { ipcRenderer } = (window as unknown as { require: (mod: string) => { ipcRenderer: { send: (channel: string, data: unknown) => void } } }).require('electron');
       ipcRenderer.send('print-receipt', venda);
-    } catch { // catch ignorando erro
+    } catch (e) { // catch ignorando erro
       setMsgAlerta('Funcionalidade disponível apenas no aplicativo Desktop (Electron) com a impressora configurada.');
     }
   };
@@ -265,7 +265,7 @@ export default function Caixa() {
       });
       setModalFecharCaixaOpen(false);
       setModalSucessoOpen(true);
-    } catch { // catch ignorando erro
+    } catch (e) { // catch ignorando erro
       console.error(e);
       setMsgAlerta("Erro ao fechar caixa.");
     }
