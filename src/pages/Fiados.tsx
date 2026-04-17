@@ -232,7 +232,7 @@ export default function Fiados() {
       {msgAlerta && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100]">
           <div className="bg-white p-10 rounded-3xl w-[450px] shadow-2xl text-slate-800 text-center flex flex-col items-center">
-            <span className="text-6xl mb-4 block">� �?</span>
+            <span className="text-6xl mb-4 block">⚠️</span>
             <h2 className="text-2xl font-black mb-2">Atenção</h2>
             <p className="text-slate-600 mb-8 font-medium">{msgAlerta}</p>
             <button

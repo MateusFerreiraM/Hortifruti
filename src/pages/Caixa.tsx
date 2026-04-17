@@ -454,7 +454,7 @@ export default function Caixa() {
       {modalEstornoOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white p-10 rounded-3xl w-[450px] shadow-2xl text-slate-800 relative text-center">
-            <span className="text-6xl mb-4 block">� �?</span>
+            <span className="text-6xl mb-4 block">⚠️</span>
             <h2 className="text-2xl font-black mb-2 text-slate-800">Estornar Venda?</h2>
             <p className="text-slate-500 mb-8 text-sm">
               CUIDADO: Você tem certeza que deseja cancelar esta venda permanentemente? Essa ação excluirá do relatório financeiro.
@@ -598,7 +598,7 @@ export default function Caixa() {
       {msgAlerta && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100]">
           <div className="bg-white p-10 rounded-3xl w-[450px] shadow-2xl text-slate-800 text-center flex flex-col items-center">
-            <span className="text-6xl mb-4 block">� �?</span>
+            <span className="text-6xl mb-4 block">⚠️</span>
             <h2 className="text-2xl font-black mb-2">Atenção</h2>
             <p className="text-slate-600 mb-8 font-medium">{msgAlerta}</p>
             <button

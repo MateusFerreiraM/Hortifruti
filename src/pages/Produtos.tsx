@@ -259,7 +259,7 @@ export default function Produtos() {
       {msgErro && (
         <div className="fixed inset-0 bg-slate-900 bg-opacity-75 flex items-center justify-center z-50">
            <div className="bg-white p-8 rounded-2xl w-[450px] shadow-2xl text-center border-t-8 border-red-500">
-             <div className="text-4xl text-red-500 mb-4">� �?</div>
+             <div className="text-4xl text-red-500 mb-4">⚠️</div>
              <h2 className="text-xl font-bold mb-4 text-slate-800">Atenção</h2>
              <p className="text-slate-600 mb-6">{msgErro}</p>
              <button onClick={() => setMsgErro('')} className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-lg w-full">
