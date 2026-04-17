@@ -15,7 +15,9 @@
     "test": "vitest run",
     "test:backend": "vitest run --dir server/tests",
     "test:coverage": "npx jest --coverage --collectCoverageFrom=server/index.cjs",
-    "test:frontend": "vitest run"
+    "test:frontend": "vitest run",
+    "pack": "electron-builder --dir",
+    "dist": "npm run build && electron-builder --windows"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
@@ -49,6 +51,7 @@
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
     "electron": "^41.2.1",
+    "electron-builder": "^26.8.1",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
@@ -67,8 +70,26 @@
     "vite": "^8.0.4",
     "vitest": "^4.1.4",
     "wait-on": "^9.0.5"
+  },
+  "build": {
+    "appId": "com.mateus.hortifruti",
+    "productName": "Hortifruti JH",
+    "asar": true,
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false
+    },
+    "files": [
+      "dist/**/*",
+      "server/**/*",
+      "main.cjs",
+      "prisma/**/*",
+      "package.json"
+    ]
   }
 }
-
-
-

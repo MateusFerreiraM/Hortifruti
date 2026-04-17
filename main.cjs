@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const { spawn } = require('child_process');
 const escpos = require('escpos');
 escpos.USB = require('escpos-usb');
 
@@ -24,7 +25,10 @@ function createWindow() {
   }
 }
 
+let backendProcess;
+
 app.whenReady().then(() => {
+  backendProcess = spawn('node', [path.join(__dirname, 'server', 'index.cjs')], { stdio: 'inherit' });
   createWindow();
 
   app.on('activate', () => {
@@ -36,6 +40,7 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    if(backendProcess) backendProcess.kill();
     app.quit();
   }
 });
