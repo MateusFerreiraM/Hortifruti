@@ -95,6 +95,40 @@ describe('Cobertura Total - Backend API', () => {
       vendaId = res.body.venda.id;
     });
 
+    it('PUT /api/vendas/:id/cliente deve renomear o cliente', async () => {
+      const res = await request(app).put(`/api/vendas/${vendaId}/cliente`).send({
+        cliente_nome: 'Cliente Renomeado'
+      });
+      expect(res.status).toBe(200);
+    });
+
+    it('PUT /api/vendas/:id deve editar os itens da venda', async () => {
+      // Busca a venda para pegar o ID do itemVenda
+      const getRes = await request(app).get('/api/vendas');
+      const venda = getRes.body.find(v => v.id === vendaId);
+      const itemId = venda.itens[0].id;
+
+      const res = await request(app).put(`/api/vendas/${vendaId}`).send({
+        itens: [
+          { id: itemId, quantidade: 2, preco_venda_unitario: 20, subtotal: 40 }
+        ]
+      });
+      expect(res.status).toBe(200);
+    });
+
+    it('POST /api/vendas de DESPESA', async () => {
+      const res = await request(app).post('/api/vendas').send({
+        itens: [],
+        pagamentos: [{ metodo: "DESPESA", valor: -50 }],
+        subtotal: -50,
+        desconto: 0,
+        total: -50,
+        status_pagamento: 'DESPESA',
+        cliente_nome: "Despesa Teste"
+      });
+      expect(res.status).toBe(200);
+    });
+
     it('GET /api/vendas sem datas', async () => {
       const res = await request(app).get('/api/vendas');
       expect(res.status).toBe(200);
@@ -105,7 +139,6 @@ describe('Cobertura Total - Backend API', () => {
       const d = new Date().toISOString().split('T')[0];
       const res = await request(app).get(`/api/vendas?startDate=${d}&endDate=${d}`);
       expect(res.status).toBe(200);
-      // Pode ser que tenha ou nao, dependendo da hora, mas testa se nn quebra
     });
 
     it('GET /api/fiados deve retornar lista de fiados', async () => {
@@ -118,38 +151,13 @@ describe('Cobertura Total - Backend API', () => {
     it('PUT /api/vendas/:id/pagar deve quitar o fiado', async () => {
       const res = await request(app).put(`/api/vendas/${vendaId}/pagar`).send({
         metodo_pagamento: 'dinheiro',
-        valor: 20
+        valor: 40 // Valor atualizado após edição dos itens
       });
       expect(res.status).toBe(200);
     });
 
     it('DELETE /api/vendas/:id para estornar a venda', async () => {
       const res = await request(app).delete(`/api/vendas/${vendaId}`);
-      expect(res.status).toBe(200);
-    });
-  });
-
-  // --- FECHAMENTOS ---
-
-  describe('CRUD de Fechamentos', () => {
-    it('POST /api/fechamento criar do dia', async () => {
-      const res = await request(app).post('/api/fechamento').send({
-        total_vendas: 100,
-        total_despesas: 20,
-        saldo_final: 80
-      });
-      expect(res.status).toBe(200);
-      fechamentoId = res.body.id;
-    });
-
-    it('GET /api/fechamentos listar', async () => {
-      const res = await request(app).get('/api/fechamentos');
-      expect(res.status).toBe(200);
-      expect(res.body.length).toBeGreaterThan(0);
-    });
-
-    it('DELETE /api/fechamentos/:id', async () => {
-      const res = await request(app).delete(`/api/fechamentos/${fechamentoId}`);
       expect(res.status).toBe(200);
     });
   });

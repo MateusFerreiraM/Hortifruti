@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
 
 interface Produto {
   id: string;
@@ -9,7 +10,7 @@ interface Produto {
   preco_venda: number;
 }
 
-export default function Produtos() {
+export default function Estoque() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [busca, setBusca] = useState('');
   const [ordenacao, setOrdenacao] = useState<'codigo' | 'nome' | 'preco_venda'>('codigo');
@@ -19,16 +20,23 @@ export default function Produtos() {
   const [msgErro, setMsgErro] = useState('');
   const [produtoExcluir, setProdutoExcluir] = useState<Produto | null>(null);
 
+  const inputBuscaRef = useRef<HTMLInputElement>(null);
+
   const carregar = () => {
-    fetch('http://localhost:3001/api/produtos')
-      .then(res => res.json())
-      .then(json => setProdutos(json))
+    axios.get('http://localhost:3001/api/produtos')
+      .then(res => setProdutos(res.data))
       .catch(err => console.error("Erro ao carregar Produtos", err));
   };
 
   useEffect(() => {
     carregar();
   }, []);
+
+  useEffect(() => {
+    if (!modalOpen && !msgErro && !produtoExcluir) {
+      inputBuscaRef.current?.focus();
+    }
+  }, [modalOpen, msgErro, produtoExcluir]);
 
   const handleNovo = () => {
     setFormData({ tipo_venda: 'UNIDADE' });
@@ -46,31 +54,35 @@ export default function Produtos() {
     const url = isEdit ? `http://localhost:3001/api/produtos/${formData.id}` : 'http://localhost:3001/api/produtos';
     const method = isEdit ? 'PUT' : 'POST';
 
-    // Aceita números com vírgula ou ponto (ex: 15,50 vira 15.50)
     const tratarNumero = (val: string | number | undefined) => Number(String(val || '0').replace(',', '.'));
+    const nomeMaiusculo = (formData.nome || '').toUpperCase();
+    const codigo = formData.codigo || '';
+    
+    const codigoDuplicado = produtos.some(p => p.codigo === codigo && p.id !== formData.id);
+    if (codigoDuplicado) {
+      setMsgErro('Já existe um produto com este código. Escolha outro código único.');
+      return;
+    }
 
     const formatData = {
       ...formData,
+      nome: nomeMaiusculo,
       preco_custo: tratarNumero(formData.preco_custo),
       preco_venda: tratarNumero(formData.preco_venda)
     };
 
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formatData)
-      });
-      if (res.ok) {
+      const res = await (method === 'POST' ? axios.post(url, formatData) : axios.put(url, formatData));
+      if (res.status === 200) {
         setModalOpen(false);
         carregar();
       } else {
-        const error = await res.json();
-        setMsgErro('Erro ao salvar: ' + (error.error || 'Verifique seus dados.'));
+        setMsgErro('Erro ao salvar produto.');
       }
-    } catch(err) {
+    } catch(err: any) {
        console.error(err);
-       setMsgErro('Falha de conexão com o banco de dados.');
+       const errMsg = err.response?.data?.error || 'Falha de conexão com o banco de dados.';
+       setMsgErro(errMsg);
     }
   };
 
@@ -81,29 +93,25 @@ export default function Produtos() {
   async function confirmarExclusao() {
     if (!produtoExcluir) return;
     try {
-      const res = await fetch(`http://localhost:3001/api/produtos/${produtoExcluir.id}`, { method: 'DELETE' });
-      const json = await res.json();
-      
+      await axios.delete(`http://localhost:3001/api/produtos/${produtoExcluir.id}`);
       setProdutoExcluir(null);
-
-      if (res.ok) {
-        carregar();
-      } else {
-        if (json.error?.includes('Foreign key constraint') || json.error?.includes('Restrict')) {
-          setMsgErro(`O produto "${produtoExcluir.nome}" já foi vendido e não pode ser apagado para não corromper o relatório financeiro do Dashboard.`);
-        } else {
-          setMsgErro('Erro ao excluir: ' + json.error);
-        }
-      }
-    } catch(err) {
+      carregar();
+    } catch(err: any) {
       console.error(err);
       setProdutoExcluir(null);
-      setMsgErro('Falha de conexão com o banco de dados ao tentar excluir.');
+      const json = err.response?.data || {};
+      if (json.error?.includes('Foreign key constraint') || json.error?.includes('Restrict')) {
+        setMsgErro(`O produto "${produtoExcluir.nome}" já foi vendido e não pode ser apagado para não corromper o relatório financeiro do Dashboard.`);
+      } else {
+        setMsgErro('Erro ao excluir: ' + (json.error || 'Erro desconhecido'));
+      }
     }
   };
 
+  const term = busca.toLowerCase().trim();
   let produtosFiltrados = produtos.filter(p => 
-    p.nome.toLowerCase().includes(busca.toLowerCase()) || p.codigo.includes(busca)
+    p.nome.toLowerCase().includes(term) || 
+    p.codigo.toLowerCase().includes(term)
   );
 
   produtosFiltrados = produtosFiltrados.sort((a, b) => {
@@ -141,28 +149,41 @@ export default function Produtos() {
         } else if (produtoExcluir) {
           e.preventDefault();
           confirmarExclusao();
+        } else if (modalOpen) {
+          // O formulário já lida com Enter se um input estiver focado,
+          // mas adicionamos aqui para garantir consistência global.
+          // Não fazemos nada se for Enter em input, para não duplicar.
+          if (document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'SELECT') {
+             e.preventDefault();
+             const submitBtn = document.getElementById('btn-salvar-produto');
+             if (submitBtn) (submitBtn as HTMLButtonElement).click();
+          }
         }
+      }
+      if (e.key === 'F9' && !modalOpen && !msgErro && !produtoExcluir) {
+        e.preventDefault();
+        handleNovo();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modalOpen, msgErro, produtoExcluir]);
+  }, [modalOpen, msgErro, produtoExcluir, formData]);
 
   return (
     <div className="p-8 h-full overflow-y-auto bg-slate-50 text-slate-800 flex flex-col">
       <div className="flex justify-between items-center mb-8">
          <h1 className="text-3xl font-bold text-slate-800">Gestão de Produtos</h1>
-         <button onClick={handleNovo} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold">
-           + Novo Produto
+         <button onClick={handleNovo} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold shadow-sm transition-colors">
+           + Novo Produto (F9)
          </button>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 flex-1 overflow-hidden flex flex-col">
         <div className="p-4 border-b border-slate-100 flex gap-4">
            <input 
+             ref={inputBuscaRef}
              className="flex-1 text-lg p-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-100"
-             placeholder="Filtrar por nome ou código (curto ou código de barras)..."
+             placeholder="Filtrar por nome ou código..."
              value={busca}
              onChange={e => setBusca(e.target.value)}
            />
@@ -211,65 +232,62 @@ export default function Produtos() {
         </div>
       </div>
 
-      {/* Modal de Formulário */}
       {modalOpen && (
         <div className="fixed inset-0 bg-slate-900 bg-opacity-75 flex items-center justify-center z-50">
-           <form onSubmit={handleSalvar} className="bg-white text-slate-800 rounded-xl p-8 w-[600px] shadow-2xl relative">
+           <form onSubmit={handleSalvar} className="bg-white text-slate-800 rounded-xl p-8 w-[600px] shadow-2xl relative animate-fade-in-up">
               <button type="button" onClick={() => setModalOpen(false)} className="absolute top-4 right-4 font-bold text-slate-400 text-xl hover:text-red-500">X</button>
               <h2 className="text-2xl font-bold mb-6 text-emerald-900">{formData.id ? 'Editar Produto' : 'Novo Produto'}</h2>
               
               <div className="grid grid-cols-2 gap-4 mb-4">
                  <div>
-                   <label className="block text-sm font-semibold text-slate-500 mb-1">Código / Cód. Barras</label>
-                   <input required className="w-full border p-2 rounded focus:outline-emerald-500" value={formData.codigo || ''} onChange={e => setFormData({...formData, codigo: e.target.value})} />
+                    <label htmlFor="codigo" className="block text-sm font-semibold text-slate-500 mb-1">Código / Cód. Barras</label>
+                    <input autoFocus id="codigo" required className="w-full border-2 p-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-100 border-slate-200" value={formData.codigo || ''} onChange={e => setFormData({...formData, codigo: e.target.value})} />
                  </div>
                  <div>
-                   <label className="block text-sm font-semibold text-slate-500 mb-1">Tipo Venda</label>
-                   <select className="w-full border p-2 rounded focus:outline-emerald-500 bg-white" value={formData.tipo_venda || 'UNIDADE'} onChange={e => setFormData({...formData, tipo_venda: e.target.value})}>
-                      <option value="UNIDADE">Unidade (UN)</option>
-                      <option value="PESO">Peso (KG)</option>
-                   </select>
+                    <label htmlFor="tipo_venda" className="block text-sm font-semibold text-slate-500 mb-1">Tipo Venda</label>
+                    <select id="tipo_venda" className="w-full border-2 p-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-100 border-slate-200 bg-white" value={formData.tipo_venda || 'UNIDADE'} onChange={e => setFormData({...formData, tipo_venda: e.target.value})}>
+                       <option value="UNIDADE">Unidade (UN)</option>
+                       <option value="PESO">Peso (KG)</option>
+                    </select>
                  </div>
               </div>
 
               <div className="mb-4">
-                 <label className="block text-sm font-semibold text-slate-500 mb-1">Nome do Produto</label>
-                 <input required className="w-full border p-2 rounded focus:outline-emerald-500" value={formData.nome || ''} onChange={e => setFormData({...formData, nome: e.target.value})} />
+                 <label htmlFor="nome" className="block text-sm font-semibold text-slate-500 mb-1">Nome do Produto</label>
+                 <input id="nome" required className="w-full border-2 p-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-100 border-slate-200" value={formData.nome || ''} onChange={e => setFormData({...formData, nome: e.target.value})} />
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-8">
                  <div>
-                   <label className="block text-sm font-semibold text-slate-500 mb-1">Custo (R$)</label>
-                   <input type="text" required placeholder="0,00" className="w-full border p-2 rounded focus:outline-emerald-500" value={formData.preco_custo || ''} onChange={e => setFormData({...formData, preco_custo: e.target.value as unknown as number})} />
+                    <label htmlFor="preco_custo" className="block text-sm font-semibold text-slate-500 mb-1">Custo (R$)</label>
+                    <input id="preco_custo" type="text" required placeholder="0,00" className="w-full border-2 p-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-100 border-slate-200" value={formData.preco_custo || ''} onChange={e => setFormData({...formData, preco_custo: e.target.value as unknown as number})} />
                  </div>
                  <div>
-                   <label className="block text-sm font-semibold text-slate-500 mb-1">Venda (R$)</label>
-                   <input type="text" required placeholder="0,00" className="w-full border p-2 rounded focus:outline-emerald-500" value={formData.preco_venda || ''} onChange={e => setFormData({...formData, preco_venda: e.target.value as unknown as number})} />
+                    <label htmlFor="preco_venda" className="block text-sm font-semibold text-slate-500 mb-1">Venda (R$)</label>
+                    <input id="preco_venda" type="text" required placeholder="0,00" className="w-full border-2 p-3 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-100 border-slate-200" value={formData.preco_venda || ''} onChange={e => setFormData({...formData, preco_venda: e.target.value as unknown as number})} />
                  </div>
               </div>
 
-              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg text-lg">
-                 Salvar Produto
+              <button id="btn-salvar-produto" type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl text-lg transition-colors shadow-md">
+                 (Enter) Salvar Produto
               </button>
            </form>
         </div>
       )}
 
-      {/* Modal CUIDADO / Erro */}
       {msgErro && (
         <div className="fixed inset-0 bg-slate-900 bg-opacity-75 flex items-center justify-center z-50">
            <div className="bg-white p-8 rounded-2xl w-[450px] shadow-2xl text-center border-t-8 border-red-500">
              <div className="text-4xl text-red-500 mb-4">⚠️</div>
              <h2 className="text-xl font-bold mb-4 text-slate-800">Atenção</h2>
              <p className="text-slate-600 mb-6">{msgErro}</p>
-             <button onClick={() => setMsgErro('')} className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-lg w-full">
-               OK, ENTENDI
+             <button onClick={() => setMsgErro('')} className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-xl w-full transition-colors">
+               OK, ENTENDI (ENTER)
              </button>
            </div>
         </div>
       )}
 
-      {/* Modal CUIDADO / Confirmação de Exclusão */}
       {produtoExcluir && (
         <div className="fixed inset-0 bg-slate-900 bg-opacity-75 flex items-center justify-center z-50">
            <div className="bg-white p-8 rounded-2xl w-[400px] shadow-2xl text-center border-t-8 border-amber-500">
@@ -277,22 +295,16 @@ export default function Produtos() {
              <h2 className="text-xl font-bold mb-4 text-slate-800">Excluir Produto</h2>
              <p className="text-slate-600 mb-6">Você tem certeza que deseja excluir <strong>{produtoExcluir.nome}</strong> permanentemente?</p>
              <div className="grid grid-cols-2 gap-4">
-               <button onClick={() => setProdutoExcluir(null)} className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-4 rounded-lg">
-                 CANCELAR
+               <button onClick={() => setProdutoExcluir(null)} className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-4 rounded-xl transition-colors">
+                 (Esc) CANCELAR
                </button>
-               <button onClick={confirmarExclusao} className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg">
-                 EXCLUIR
+               <button onClick={confirmarExclusao} className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md">
+                 (Enter) EXCLUIR
                </button>
              </div>
            </div>
         </div>
       )}
-
     </div>
   );
 }
-
-
-
-
-

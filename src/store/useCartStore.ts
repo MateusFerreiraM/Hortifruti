@@ -9,6 +9,7 @@ interface Produto {
 }
 
 interface ItemCarrinho extends Produto { 
+  cartId: string;
   quantidade: number; 
   subtotal: number; 
 }
@@ -16,7 +17,7 @@ interface ItemCarrinho extends Produto {
 interface CartState {
   itens: ItemCarrinho[];
   adicionarItem: (produto: Produto, quantidade: number) => void;
-  removerItem: (id: string) => void;
+  removerItem: (cartId: string) => void;
   limparCarrinho: () => void;
   totalDaCompra: () => number;
 }
@@ -24,17 +25,17 @@ interface CartState {
 export const useCartStore = create<CartState>((set, get) => ({
   itens: [],
   adicionarItem: (produto, quantidade) => set((state) => {
-    const itemExistente = state.itens.find(i => i.id === produto.id);
-    const subtotal = (itemExistente ? itemExistente.quantidade + quantidade : quantidade) * produto.preco_venda;
-
-    if (itemExistente) {
-      return { 
-        itens: state.itens.map(i => i.id === produto.id ? { ...i, quantidade: i.quantidade + quantidade, subtotal } : i) 
-      };
-    }
-    return { itens: [...state.itens, { ...produto, quantidade, subtotal }] };
+    const nomeMaiusculo = produto.nome.toUpperCase();
+    const novoItem = { 
+      ...produto, 
+      nome: nomeMaiusculo,
+      cartId: crypto.randomUUID(), 
+      quantidade, 
+      subtotal: quantidade * produto.preco_venda 
+    };
+    return { itens: [novoItem, ...state.itens] };
   }),
-  removerItem: (id) => set((state) => ({ itens: state.itens.filter(i => i.id !== id) })),
+  removerItem: (cartId) => set((state) => ({ itens: state.itens.filter(i => i.cartId !== cartId) })),
   limparCarrinho: () => set({ itens: [] }),
   totalDaCompra: () => get().itens.reduce((acc, item) => acc + item.subtotal, 0),
 }));

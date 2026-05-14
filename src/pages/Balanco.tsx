@@ -1,163 +1,103 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
-import { Trash2 } from "lucide-react";
-
-interface Fechamento {
-  id: string;
-  data_fechamento: string;
-  total_vendas: number;
-  total_despesas: number;
-  saldo_final: number;
+interface BalancoDiario {
+  data: string;
+  vendas: number;
+  despesas: number;
+  saldo: number;
 }
 
 export default function Balanco() {
-  const [fechamentos, setFechamentos] = useState<Fechamento[]>([]);
+  const [balancos, setBalancos] = useState<BalancoDiario[]>([]);
   const [loading, setLoading] = useState(true);
   const [msgAlerta, setMsgAlerta] = useState<string | null>(null);
-  const [modalExcluirOpen, setModalExcluirOpen] = useState(false);
-  const [fechamentoParaExcluir, setFechamentoParaExcluir] = useState<string | null>(null);
 
-  const carregarFechamentos = async () => {
+  const carregarBalancos = async () => {
     try {
-      const { data } = await axios.get("http://localhost:3001/api/fechamentos");
-      setFechamentos(data);
+      const { data } = await axios.get("http://localhost:3001/api/fechamentos/automatico");
+      setBalancos(data);
     } catch (error) {
       console.error(error);
-      setMsgAlerta("Erro ao carregar fechamentos");
+      setMsgAlerta("Erro ao carregar relatório de balanço");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    carregarFechamentos();
+    carregarBalancos();
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (msgAlerta) {
-        if (e.key === 'Escape' || e.key === 'Enter') {
-          e.preventDefault();
-          setMsgAlerta(null);
-        }
-        return;
-      }
-      if (modalExcluirOpen) {
-        if (e.key === 'Escape') {
-          e.preventDefault();
-          setModalExcluirOpen(false);
-          setFechamentoParaExcluir(null);
-        } else if (e.key === 'Enter') {
-          e.preventDefault();
-          confirmarExclusao();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [modalExcluirOpen, fechamentoParaExcluir, msgAlerta]);
-
-  const handleExcluir = (id: string) => {
-    setFechamentoParaExcluir(id);
-    setModalExcluirOpen(true);
-  };
-
-  const confirmarExclusao = async () => {
-    if (!fechamentoParaExcluir) return;
-    try {
-      await axios.delete(`http://localhost:3001/api/fechamentos/${fechamentoParaExcluir}`);
-      setFechamentos(prev => prev.filter(f => f.id !== fechamentoParaExcluir));
-      setModalExcluirOpen(false);
-      setFechamentoParaExcluir(null);
-    } catch (error) {
-      console.error(error);
-      setMsgAlerta("Erro ao excluir fechamento.");
-    }
-  };
-
-  if (loading) return <div className="p-8 text-xl">Carregando Balanços...</div>;
+  if (loading) return <div className="p-8 text-xl text-slate-500 font-bold animate-pulse">Gerando Relatório de Balanço...</div>;
 
   return (
     <div className="p-8 h-full overflow-y-auto bg-slate-50 text-slate-800 flex flex-col">
-      <h1 className="text-3xl font-bold text-slate-800 mb-8">Balanço por Dia (Fechamentos de Caixa)</h1>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-100 text-slate-600 uppercase text-xs tracking-wider">
-              <th className="p-4 font-bold border-b">Data / Hora do Fechamento</th>
-              <th className="p-4 font-bold border-b text-right">Total Vendido (+)</th>
-              <th className="p-4 font-bold border-b text-right">Despesas (-)</th>
-              <th className="p-4 font-bold border-b text-right">Saldo Final do Dia</th>
-              <th className="p-4 font-bold border-b text-center">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {fechamentos.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="p-6 text-center text-slate-500 font-medium">Nenhum caixa fechado ainda.</td>
-              </tr>
-            ) : fechamentos.map((f) => (
-              <tr key={f.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
-                <td className="p-4 font-bold text-slate-700">
-                  {new Date(f.data_fechamento).toLocaleString("pt-BR")}
-                </td>
-                <td className="p-4 text-emerald-600 font-bold text-right">R$ {Number(f.total_vendas).toFixed(2)}</td>
-                <td className="p-4 text-red-600 font-bold text-right">R$ {Number(f.total_despesas).toFixed(2)}</td>
-                <td className={`p-4 font-bold text-right ${Number(f.saldo_final) >= 0 ? "text-emerald-700" : "text-red-700"}`}>
-                  R$ {Number(f.saldo_final).toFixed(2)}
-                </td>
-                <td className="p-4 text-center">
-                  <button
-                    onClick={() => handleExcluir(f.id)}
-                    className="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50 transition-colors"
-                    title="Excluir Fechamento"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-4xl font-black text-slate-800">Balanço Diário</h1>
+          <p className="text-slate-500 font-medium">Relatório automatizado de vendas e despesas agrupado por dia.</p>
+        </div>
+        <div className="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider">
+          Atualizado em tempo real
+        </div>
       </div>
 
-      {modalExcluirOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-10 rounded-3xl w-[450px] shadow-2xl text-slate-800 relative text-center">
-            <span className="text-6xl mb-4 block">âš ï¸</span>
-            <h2 className="text-2xl font-black mb-2 text-slate-800">Excluir Fechamento?</h2>
-            <p className="text-slate-600 mb-8">Tem certeza de que deseja excluir este fechamento do histórico? Esta ação não pode ser desfeita.</p>
-            <div className="flex gap-4">
-              <button
-                onClick={() => setModalExcluirOpen(false)}
-                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-colors"
-              >
-                Cancelar (ESC)
-              </button>
-              <button
-                onClick={confirmarExclusao}
-                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-red-500/30 transition-colors"
-              >
-                Sim, Excluir (ENTER)
-              </button>
-            </div>
-          </div>
+      {balancos.length === 0 ? (
+        <div className="bg-white p-12 rounded-3xl border-2 border-dashed border-slate-200 text-center">
+          <p className="text-slate-400 font-bold text-xl">Nenhuma movimentação registrada até o momento.</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-800 text-white uppercase text-xs tracking-widest">
+                <th className="p-6 font-black">Data</th>
+                <th className="p-6 font-black text-right">Vendas (+)</th>
+                <th className="p-6 font-black text-right">Despesas (-)</th>
+                <th className="p-6 font-black text-right">Saldo Final</th>
+              </tr>
+            </thead>
+            <tbody>
+              {balancos.map((b) => (
+                <tr key={b.data} className="border-b last:border-0 hover:bg-slate-50 transition-colors group">
+                  <td className="p-6">
+                    <div className="flex flex-col">
+                      <span className="font-black text-slate-700 text-lg">
+                        {b.data?.split('-').reverse().join('/') || '---'}
+                      </span>
+                      {b.data === new Date().toISOString().split('T')[0] && (
+                        <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 self-start px-2 py-0.5 rounded-full mt-1 uppercase">
+                          Hoje (Em aberto)
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-6 text-emerald-600 font-black text-right text-xl italic">
+                    R$ {Number(b.vendas || 0).toFixed(2)}
+                  </td>
+                  <td className="p-6 text-red-500 font-black text-right text-xl italic">
+                    R$ {Number(b.despesas || 0).toFixed(2)}
+                  </td>
+                  <td className={`p-6 font-black text-right text-2xl ${Number(b.saldo || 0) >= 0 ? "text-emerald-700" : "text-red-700"}`}>
+                    <span className="bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100 shadow-inner">
+                      R$ {Number(b.saldo || 0).toFixed(2)}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
       {msgAlerta && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100]">
-          <div className="bg-white p-10 rounded-3xl w-[450px] shadow-2xl text-slate-800 text-center flex flex-col items-center">
-            <span className="text-6xl mb-4 block">âš ï¸</span>
-            <h2 className="text-2xl font-black mb-2">Atenção</h2>
+          <div className="bg-white p-10 rounded-3xl w-[450px] shadow-2xl text-center">
+            <h2 className="text-2xl font-black mb-2 text-slate-800 uppercase">Aviso</h2>
             <p className="text-slate-600 mb-8 font-medium">{msgAlerta}</p>
-            <button
-              onClick={() => setMsgAlerta(null)}
-              className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl transition-colors"
-            >
-              OK (ENTER)
+            <button onClick={() => setMsgAlerta(null)} className="w-full bg-slate-800 text-white font-black py-4 rounded-2xl shadow-lg hover:bg-slate-700 transition-all uppercase tracking-widest">
+              Entendi
             </button>
           </div>
         </div>
@@ -165,5 +105,3 @@ export default function Balanco() {
     </div>
   );
 }
-
-

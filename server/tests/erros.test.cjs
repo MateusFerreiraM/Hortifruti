@@ -44,16 +44,4 @@ describe('Cobertura de Tratamento de Erros (Catch Blocks)', () => {
       expect(res.status).toBe(500); 
   });
 
-  it('POST /api/fechamento com payload incorreto', async () => {
-      const res = await request(app).post('/api/fechamento').send({
-          total_vendas: "isso-nao-pode-ser-numero"
-      });
-      expect(res.status).toBe(500); 
-  });
-
-  it('DELETE /api/fechamentos/:id com id inválido', async () => {
-      const res = await request(app).delete('/api/fechamentos/id-que-nao-existe');
-      expect(res.status).toBe(500); 
-  });
-
 });

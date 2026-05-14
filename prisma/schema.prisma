@@ -9,19 +9,16 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-
-
-
 model Produto {
-  id             String      @id @default(uuid())
-  codigo         String      @unique
-  nome           String
-  tipo_venda     String
-  preco_custo    Decimal
-  preco_venda    Decimal
-  criado_em      DateTime    @default(now())
-  atualizado_em  DateTime    @updatedAt
-  itens_venda    ItemVenda[]
+  id            String      @id @default(uuid())
+  codigo        String      @unique
+  nome          String
+  tipo_venda    String
+  preco_custo   Decimal
+  preco_venda   Decimal
+  criado_em     DateTime    @default(now())
+  atualizado_em DateTime    @updatedAt
+  itens_venda   ItemVenda[]
 
   @@map("produtos")
 }
@@ -48,27 +45,22 @@ model ItemVenda {
   preco_venda_unitario Decimal
   preco_custo_unitario Decimal
   subtotal             Decimal
-
-  venda   Venda   @relation(fields: [venda_id], references: [id], onDelete: Cascade)
-  produto Produto @relation(fields: [produto_id], references: [id], onDelete: Restrict)
+  produto              Produto @relation(fields: [produto_id], references: [id])
+  venda                Venda   @relation(fields: [venda_id], references: [id], onDelete: Cascade)
 
   @@map("itens_venda")
 }
 
-
-
-
 model Pagamento {
-  id       String          @id @default(uuid())
-  venda_id String
-  metodo   String
-  valor    Decimal
-
-  venda Venda @relation(fields: [venda_id], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  venda_id  String
+  metodo    String
+  valor     Decimal
+  data_hora DateTime @default(now())
+  venda     Venda    @relation(fields: [venda_id], references: [id], onDelete: Cascade)
 
   @@map("pagamentos")
 }
-
 
 model Fechamento {
   id              String   @id @default(uuid())
